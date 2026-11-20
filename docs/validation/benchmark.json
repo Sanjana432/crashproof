@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-20T10:17:41.550241+00:00",
+  "run_id": "b25cb334de8b",
+  "scope": "real Temporal workflow + SQLite business operations; excludes HTTP/browser latency",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.14",
+  "orders": 30,
+  "concurrency": 5,
+  "completed": 30,
+  "errors": [],
+  "elapsed_seconds": 15.4735,
+  "completed_per_second": 1.939,
+  "latency_seconds": {
+    "p50": 2.4428,
+    "p95": 3.2292,
+    "max": 3.2644
+  },
+  "invariants": {
+    "one_charge_per_completed_order": true
+  }
+}

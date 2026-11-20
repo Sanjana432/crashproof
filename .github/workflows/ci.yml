@@ -1,0 +1,47 @@
+name: Checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e .
+      - name: Install Temporal CLI
+        run: |
+          curl -fsSL https://github.com/temporalio/cli/releases/download/v1.10.1/temporal_cli_1.10.1_linux_amd64.tar.gz -o /tmp/temporal.tar.gz
+          tar -xzf /tmp/temporal.tar.gz -C /tmp temporal
+      - name: Start real Temporal service
+        run: |
+          mkdir -p data
+          /tmp/temporal server start-dev --ip 127.0.0.1 --port 7233 --db-filename data/temporal.db > /tmp/temporal.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if /tmp/temporal operator cluster health --address 127.0.0.1:7233; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/temporal.log
+          exit 1
+      - name: Unit, HTTP and real workflow integration tests
+        env:
+          TEMPORAL_ADDRESS: 127.0.0.1:7233
+        run: python -m unittest discover -s tests -v
+      - name: Actual worker crash and recovery
+        run: python -m crashproof demo --output data/ci-crash-result.json
+      - name: Preserve failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crashproof-failure-${{ matrix.python-version }}
+          path: |
+            data/
+            /tmp/temporal.log

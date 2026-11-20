@@ -1,0 +1,7 @@
+# Direct runtime versions used for the recorded Windows/Python 3.12 validation.
+# Apply with: python -m pip install -e . -c constraints-tested.txt
+temporalio==1.36.1
+fastapi==0.165.0
+uvicorn==0.54.0
+httpx==0.28.1
+opentelemetry-sdk==1.45.2

@@ -1,0 +1,133 @@
+{
+  "run_id": "d5a69d6b8833",
+  "at": "2026-11-20T10:21:41.554175+00:00",
+  "scenario": "actual worker exit after committed simulated charge, followed by fresh-worker recovery",
+  "workflow_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+  "first_worker_exit_code": 78,
+  "elapsed_seconds": 21.792,
+  "result": {
+    "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+    "status": "completed"
+  },
+  "charge_effects": 1,
+  "deduplicated_charge_attempts": 1,
+  "business_database": "data\\crash-demos\\d5a69d6b8833\\business.sqlite3",
+  "events": [
+    {
+      "sequence": 1,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:19.726571+00:00",
+      "kind": "order_accepted",
+      "detail": {
+        "fault": "worker_crash",
+        "request_digest": "dc880f2b18e6682dd59d13481d956611629e0764d3cb77f7d2cff4119e94538f"
+      }
+    },
+    {
+      "sequence": 2,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:24.777792+00:00",
+      "kind": "state_changed",
+      "detail": {
+        "from": "accepted",
+        "reason": "",
+        "to": "reserving"
+      }
+    },
+    {
+      "sequence": 3,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:24.912764+00:00",
+      "kind": "inventory_reserved",
+      "detail": {
+        "quantity": 1,
+        "sku": "keyboard"
+      }
+    },
+    {
+      "sequence": 4,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:24.991685+00:00",
+      "kind": "state_changed",
+      "detail": {
+        "from": "reserving",
+        "reason": "",
+        "to": "charging"
+      }
+    },
+    {
+      "sequence": 5,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:25.062159+00:00",
+      "kind": "payment_attempt",
+      "detail": {
+        "attempt": 1
+      }
+    },
+    {
+      "sequence": 6,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:25.069815+00:00",
+      "kind": "payment_charged",
+      "detail": {
+        "amount_cents": 7900
+      }
+    },
+    {
+      "sequence": 7,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:25.069815+00:00",
+      "kind": "crash_boundary_committed",
+      "detail": {
+        "note": "Worker exits after this transaction commits and before reporting activity completion"
+      }
+    },
+    {
+      "sequence": 8,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:31.098982+00:00",
+      "kind": "payment_attempt",
+      "detail": {
+        "attempt": 2
+      }
+    },
+    {
+      "sequence": 9,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:31.098982+00:00",
+      "kind": "charge_deduplicated",
+      "detail": {
+        "amount_cents": 7900
+      }
+    },
+    {
+      "sequence": 10,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:41.288987+00:00",
+      "kind": "state_changed",
+      "detail": {
+        "from": "charging",
+        "reason": "",
+        "to": "fulfilling"
+      }
+    },
+    {
+      "sequence": 11,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:41.361216+00:00",
+      "kind": "order_fulfilled",
+      "detail": {}
+    },
+    {
+      "sequence": 12,
+      "order_id": "cp-9f1d441ec16e28a4e28ec3a69a72b393",
+      "at": "2026-11-20T10:21:41.480923+00:00",
+      "kind": "state_changed",
+      "detail": {
+        "from": "fulfilling",
+        "reason": "",
+        "to": "completed"
+      }
+    }
+  ]
+}
