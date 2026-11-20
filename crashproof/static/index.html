@@ -1,12 +1,93 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CrashProof · Reliability lab</title><link rel="stylesheet" href="/static/style.css"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4b182d">
+  <title>CrashProof · Reliability lab</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
 <body>
-<aside class="rail"><a class="brand" href="/">C<span>↗</span></a><div class="rail-label">CRASHPROOF</div><nav><a href="#workspace" class="active">◈<span>Workspace</span></a><a href="#experiments">⌁<span>Experiments</span></a><a href="/docs" target="_blank">⌘<span>API reference</span></a><a href="http://127.0.0.1:8233" target="_blank">↗<span>Temporal UI</span></a></nav><div class="rail-bottom"><i></i> LOCAL LAB<br><small>Simulated payments only</small></div></aside>
-<main id="workspace"><header><div><span class="eyebrow">DISTRIBUTED SYSTEMS / FAILURE RECOVERY</span><h1>Built to recover.</h1><p>Break a worker. Replay a request. Watch the workflow keep its promises.</p></div><div class="health"><span id="health-dot" class="dot"></span><div><strong id="health-label">Checking Temporal</strong><small id="queue-label">Connecting to the local service</small></div></div></header>
-<div class="notice"><span>↳</span><p>A live Temporal workflow lab. Inventory and payment effects are stored transactionally; retries are made safe with idempotency keys.</p><a href="/docs" target="_blank">Explore the API ↗</a></div>
-<section class="metrics"><article><span>ORDERS ACCEPTED</span><strong id="metric-orders">0</strong><small>Durably saved requests</small></article><article><span>COMPLETED</span><strong id="metric-completed">0</strong><small>Workflow reached its final state</small></article><article><span>DUPLICATE CHARGES AVOIDED</span><strong id="metric-dedup">0</strong><small>Repeated payment attempts deduplicated</small></article><article><span>COMPENSATIONS</span><strong id="metric-refunds">0</strong><small>Committed charges refunded</small></article></section>
-<div class="workspace-grid"><section class="panel create"><div class="section-heading"><div><span class="eyebrow">01 / SUBMIT</span><h2>Create an order</h2></div><span class="pill">SANDBOX</span></div><form id="order-form"><label>Customer name<input id="customer" value="Alex Morgan" maxlength="100" required></label><div class="field-row"><label>Product<select id="sku"><option value="keyboard">Mechanical keyboard · $79</option><option value="headphones">Studio headphones · $129</option><option value="dock">USB-C workstation dock · $99</option></select></label><label class="quantity">Quantity<input id="quantity" type="number" min="1" max="100" value="1" required></label></div><label>Failure scenario<select id="fault"><option value="none">Happy path — no injected fault</option><option value="payment_retry">Temporary payment failure — succeeds on retry</option><option value="payment_decline">Payment declined — release inventory</option><option value="fulfillment_fail">Fulfillment rejected — refund and release</option><option value="worker_crash">Crash after charge — restart the worker</option></select></label><label class="check"><input id="approval" type="checkbox">Pause for manual approval before payment</label><div class="idempotency"><span>REQUEST KEY</span><code id="request-key"></code><button type="button" id="new-key">New key ↻</button></div><button class="primary" id="submit" type="submit">Start workflow <span>↗</span></button><button class="secondary" id="replay" type="button" disabled>Replay identical request</button><p class="form-note">A replay reuses the exact request and key. It creates no second order.</p><div id="form-message" role="status"></div></form></section>
-<section class="panel orders"><div class="section-heading"><div><span class="eyebrow">02 / OBSERVE</span><h2>Order activity</h2></div><span class="live-indicator"><i></i> LIVE</span></div><div class="table-wrap"><table><thead><tr><th>ORDER / CUSTOMER</th><th>AMOUNT</th><th>STATE</th><th></th></tr></thead><tbody id="orders-body"></tbody></table><div id="orders-empty" class="empty"><div>◌</div><h3>Your first workflow starts here</h3><p>Submit an order to inspect its durable state and side effects.</p></div></div><div class="inventory" id="inventory"></div></section></div>
-<section id="detail-panel" class="panel detail" hidden><div class="section-heading"><div><span class="eyebrow">03 / INSPECT</span><h2 id="detail-title">Workflow evidence</h2></div><div class="detail-actions"><button id="approve" hidden>Approve order</button><button id="reject" hidden>Reject order</button><button id="spans">Download OTel spans</button><button id="history">Download Temporal history ↗</button></div></div><div class="detail-grid"><div><h3>Business event timeline</h3><div id="timeline"></div></div><div class="ledger"><h3>Side-effect ledger</h3><dl id="ledger"></dl><p>One payment record per order. A repeated activity reads the existing result instead of applying the effect again.</p><div id="crash-note" hidden><strong>Worker intentionally exited.</strong><p>Start a fresh dedicated worker to recover:</p><code>python -m crashproof worker --allow-crash</code></div></div></div></section>
-<section class="experiments" id="experiments"><div><span class="eyebrow">PUT RELIABILITY ON DISPLAY</span><h2>Five ways to test the promise.</h2><p>Each scenario is backed by actual workflow execution and visible business-state changes.</p></div><div class="experiment-cards"><article><span>01</span><h3>Retry safely</h3><p>Fail a payment attempt once. Temporal schedules another attempt; the workflow completes.</p></article><article><span>02</span><h3>Compensate</h3><p>Reject fulfillment after payment. The Saga refunds the charge and releases inventory.</p></article><article><span>03</span><h3>Crash & resume</h3><p>Exit a dedicated worker at the commit boundary. Restart it and inspect the deduplicated charge.</p></article><article><span>04</span><h3>Replay a request</h3><p>Submit the same idempotency key and payload again. The API returns the existing order.</p></article><article><span>05</span><h3>Wait for approval</h3><p>Pause the durable workflow before payment, then send an approval or rejection signal.</p></article></div></section><footer><span>CRASHPROOF / RELIABILITY LAB</span><span>Local, single-user demonstration · No real payments</span><a href="https://github.com/Sanjana432/crashproof" target="_blank">Source code ↗</a></footer>
-</main><script src="/static/app.js"></script></body></html>
+  <a class="skip" href="#orders">Skip to orders</a>
+  <div class="masthead">
+    <a class="brand" href="/"><img src="/static/favicon.svg" alt="">CrashProof</a>
+    <nav aria-label="Main navigation">
+      <a href="#orders">Orders</a><a href="#experiments">Experiments</a><a href="/docs" target="_blank" rel="noopener">API ↗</a>
+    </nav>
+    <a class="external" href="http://127.0.0.1:8233" target="_blank" rel="noopener">Temporal UI ↗</a>
+  </div>
+  <main id="workspace">
+    <div class="hero">
+      <header class="intro">
+        <p class="eyebrow">DURABLE WORKFLOW LAB</p>
+        <h1>Built to<br><em>recover.</em></h1>
+        <p class="intro-copy">Crash a worker, replay an order, and trace what happens to its payment and inventory.</p>
+        <div class="health"><span id="health-dot" class="dot"></span><div><strong id="health-label">Checking Temporal</strong><small id="queue-label">Connecting to the local service</small></div></div>
+      </header>
+      <figure class="route-board" aria-labelledby="route-heading">
+        <div class="route-heading"><figcaption id="route-heading">Workflow route</figcaption><span id="route-mode">System overview</span></div>
+        <div class="route-diagram" aria-hidden="true">
+          <div class="main-route">
+            <div class="station" data-stage="request"><b>01</b><span>Accept</span></div><i></i>
+            <div class="station" data-stage="reserve"><b>02</b><span>Reserve</span></div><i></i>
+            <div class="station" data-stage="charge"><b>03</b><span>Charge</span></div><i></i>
+            <div class="station" data-stage="fulfill"><b>04</b><span>Fulfill</span></div>
+          </div>
+          <div class="return-route"><span class="return-start"></span><div class="station return-station" data-stage="compensate"><b>↶</b><span>Compensate</span></div><span class="return-end"></span></div>
+        </div>
+        <p id="route-status" class="route-status">Select an order to see its recorded path.</p>
+      </figure>
+    </div>
+    <section class="metrics" aria-label="Workflow totals">
+      <article><span>Orders accepted</span><strong id="metric-orders">—</strong><small>Saved requests</small></article>
+      <article><span>Completed</span><strong id="metric-completed">—</strong><small>Successful workflows</small></article>
+      <article><span>Duplicate charges avoided</span><strong id="metric-dedup">—</strong><small>Repeated payment attempts</small></article>
+      <article><span>Refunds</span><strong id="metric-refunds">—</strong><small>Compensated payments</small></article>
+    </section>
+    <div class="workspace-grid" id="orders">
+      <section class="panel create">
+        <div class="section-heading"><h2>Create an order</h2><small>Simulated payments</small></div>
+        <form id="order-form">
+          <label>Customer name<input id="customer" value="Alex Morgan" maxlength="100" required></label>
+          <div class="field-row">
+            <label>Product<select id="sku"><option value="keyboard">Mechanical keyboard · $79</option><option value="headphones">Studio headphones · $129</option><option value="dock">USB-C workstation dock · $99</option></select></label>
+            <label class="quantity">Quantity<input id="quantity" type="number" min="1" max="100" value="1" required></label>
+          </div>
+          <label>Failure scenario<select id="fault"><option value="none">Happy path — no injected fault</option><option value="payment_retry">Temporary payment failure — succeeds on retry</option><option value="payment_decline">Payment declined — release inventory</option><option value="fulfillment_fail">Fulfillment rejected — refund and release</option><option value="worker_crash">Crash after charge — restart the worker</option></select></label>
+          <label class="check"><input id="approval" type="checkbox">Pause for approval before payment</label>
+          <div class="idempotency"><span>Request key</span><code id="request-key"></code><button type="button" id="new-key">New key ↻</button></div>
+          <button class="primary" id="submit" type="submit">Start workflow <span aria-hidden="true">↗</span></button>
+          <button class="secondary" id="replay" type="button" disabled>Replay identical request</button>
+          <p class="form-note">Replay uses the same request key and returns the existing order.</p>
+          <div id="form-message" role="status"></div>
+        </form>
+      </section>
+      <section class="panel orders">
+        <div class="section-heading"><h2>Order activity</h2><span class="live-indicator"><i></i> Auto-refresh</span></div>
+        <div class="table-wrap">
+          <table aria-label="Recent orders"><thead><tr><th scope="col">Order / customer</th><th scope="col">Amount</th><th scope="col">State</th><th scope="col"><span class="sr-only">Inspect</span></th></tr></thead><tbody id="orders-body"></tbody></table>
+          <div id="orders-empty" class="empty"><div class="empty-symbol" aria-hidden="true"></div><h3>No orders yet</h3><p>Start a workflow to inspect its status and side effects.</p></div>
+        </div>
+        <div class="stock"><h3>Available inventory</h3><div class="inventory" id="inventory"></div></div>
+      </section>
+    </div>
+    <section id="detail-panel" class="panel detail" hidden>
+      <div class="section-heading"><h2 id="detail-title">Workflow evidence</h2><div class="detail-actions"><button id="approve" hidden>Approve order</button><button id="reject" hidden>Reject order</button><button id="spans">Download OTel spans</button><button id="history">Download Temporal history ↗</button></div></div>
+      <div class="detail-grid"><div><h3>Business events</h3><div id="timeline"></div></div><div class="ledger"><h3>Side-effect ledger</h3><dl id="ledger"></dl><div id="crash-note" hidden><strong>Worker intentionally exited.</strong><p>Start a fresh dedicated worker to recover.</p><code>python -m crashproof worker --allow-crash</code></div></div></div>
+    </section>
+    <section class="experiments" id="experiments" aria-labelledby="experiment-heading">
+      <h2 id="experiment-heading">Recovery experiments</h2>
+      <div class="experiment-cards">
+        <article><span aria-hidden="true">↻</span><h3>Retry safely</h3><p>Fail the first payment attempt and follow the successful retry.</p><button data-scenario="payment_retry">Select payment retry ↗</button></article>
+        <article><span aria-hidden="true">↶</span><h3>Compensate</h3><p>Reject fulfillment after payment and inspect the refund and stock release.</p><button data-scenario="fulfillment_fail">Select fulfillment rejection ↗</button></article>
+        <article><span aria-hidden="true">⌁</span><h3>Crash and resume</h3><p>Restart a dedicated worker after it exits at the charge boundary.</p><button data-scenario="worker_crash">Select worker crash ↗</button></article>
+        <article><span aria-hidden="true">≡</span><h3>Replay a request</h3><p>Submit a request twice with the same key to inspect deduplication.</p></article>
+        <article><span aria-hidden="true">◫</span><h3>Wait for approval</h3><p>Pause a workflow before payment, then send an approval or rejection signal.</p></article>
+      </div>
+    </section>
+    <footer><span>CrashProof · Local reliability lab</span><a href="https://github.com/Sanjana432/crashproof" target="_blank" rel="noopener">Source on GitHub ↗</a></footer>
+  </main>
+</body>
+</html>

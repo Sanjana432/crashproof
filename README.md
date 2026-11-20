@@ -8,9 +8,9 @@
 
 A working distributed-systems laboratory built with **Temporal, FastAPI, SQLite and OpenTelemetry**. Submit an order, inject a failure and inspect durable workflow history, transactional side effects and real telemetry spans. The included crash demonstration terminates an actual worker process after a simulated charge commits, starts a fresh worker and checks that recovery creates no second charge.
 
-![CrashProof reliability dashboard](docs/dashboard.jpg)
+The dashboard shows the selected order’s workflow route and compensation branch alongside its recorded events. Open the local app to try it with a live order.
 
-[Mobile interface preview](docs/mobile.jpg)
+Earlier interface screenshots are available for [desktop](docs/dashboard.jpg) and [mobile](docs/mobile.jpg).
 
 ## What this demonstrates
 
